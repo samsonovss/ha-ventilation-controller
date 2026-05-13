@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from homeassistant.components.button import ButtonEntity
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity import EntityCategory
 
 from .const import DOMAIN
 from . import RuntimeData
@@ -15,6 +16,8 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities) -> N
 
 
 class PidWindowAutotuneButton(ButtonEntity):
+    _attr_entity_category = EntityCategory.CONFIG
+
     def __init__(self, controller, entry_id: str) -> None:
         self._controller = controller
         self._entry_id = entry_id

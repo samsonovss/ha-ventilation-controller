@@ -5,6 +5,7 @@ from __future__ import annotations
 from homeassistant.components.number import NumberEntity, NumberMode
 from homeassistant.const import UnitOfTemperature
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity import EntityCategory
 
 from .const import DOMAIN
 from . import RuntimeData
@@ -23,6 +24,7 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities) -> N
 
 class PidWindowNumber(NumberEntity):
     _attr_mode = NumberMode.BOX
+    _attr_entity_category = EntityCategory.CONFIG
 
     def __init__(self, controller, entry_id: str, key: str, name: str, min_value: float, max_value: float, step: float, unit: str | None) -> None:
         self._controller = controller

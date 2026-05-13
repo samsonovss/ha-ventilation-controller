@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers.entity import EntityCategory
 
 from .const import DOMAIN
 from . import RuntimeData

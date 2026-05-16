@@ -110,7 +110,7 @@ _ENTITY_DOMAIN_BY_UNIQUE_KEY = {
     "cooling_mode": "select",
     "pid_profile": "select",
     "ac_conflict_protection": "switch",
-    "co2_ventilation": "switch",
+    "co2_ventilation": "select",
     "status": "sensor",
     "co2_status": "sensor",
     "co2": "sensor",
@@ -234,6 +234,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = RuntimeData(controller=controller)
     registry = er.async_get(hass)
+    legacy_co2_switch = registry.async_get_entity_id("switch", DOMAIN, f"{entry.entry_id}_co2_ventilation")
+    if legacy_co2_switch is not None:
+        registry.async_remove(legacy_co2_switch)
     if controller.ac_climate_entity is None:
         _remove_entities_by_unique_keys(registry, entry.entry_id, _AC_ENTITY_UNIQUE_IDS)
     if controller.co2_sensor is None:

@@ -15,8 +15,6 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities) -> N
     switches = []
     if controller.ac_climate_entity:
         switches.append(PidWindowSwitch(controller, entry.entry_id, "ac_conflict_protection"))
-    if controller.co2_sensor:
-        switches.append(PidWindowSwitch(controller, entry.entry_id, "co2_ventilation"))
     async_add_entities(switches)
 
 
@@ -43,13 +41,7 @@ class PidWindowSwitch(SwitchEntity):
         return bool(getattr(self._controller, self._key))
 
     async def async_turn_on(self, **kwargs) -> None:
-        if self._key == "co2_ventilation":
-            await self._controller.async_set_co2_ventilation(True)
-            return
         await self._controller.async_set_ac_conflict_protection(True)
 
     async def async_turn_off(self, **kwargs) -> None:
-        if self._key == "co2_ventilation":
-            await self._controller.async_set_co2_ventilation(False)
-            return
         await self._controller.async_set_ac_conflict_protection(False)

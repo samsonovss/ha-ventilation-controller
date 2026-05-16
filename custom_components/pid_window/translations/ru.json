@@ -75,9 +75,6 @@
     "switch": {
       "ac_conflict_protection": {
         "name": "Защита при кондиционере"
-      },
-      "co2_ventilation": {
-        "name": "Проветривание по CO₂"
       }
     },
     "select": {
@@ -96,6 +93,13 @@
           "normal": "Нормальный",
           "aggressive": "Агрессивный",
           "manual": "Ручной"
+        }
+      },
+      "co2_ventilation": {
+        "name": "Проветривание CO₂",
+        "state": {
+          "disabled": "Выключено",
+          "auto": "Авто"
         }
       }
     },

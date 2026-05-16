@@ -336,16 +336,16 @@ class PidWindowController:
             self.state.co2_status = "disabled"
             self._reset_co2_no_effect()
             return None
+        if not self.co2_ventilation:
+            self.state.co2_status = "disabled"
+            self._reset_co2_no_effect()
+            return None
         if co2 is None:
             self.state.co2_status = "co2_unavailable"
             self._reset_co2_no_effect()
             return None
         if not co2_active:
             self.state.co2_status = "idle"
-            self._reset_co2_no_effect()
-            return None
-        if not self.co2_ventilation:
-            self.state.co2_status = "co2_high"
             self._reset_co2_no_effect()
             return None
         if current_temp <= self.target_temp + self.co2_indoor_guard_margin:

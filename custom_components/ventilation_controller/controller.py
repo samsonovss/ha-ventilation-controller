@@ -744,13 +744,12 @@ class PidWindowController:
             self._integral = 0.0
             self._previous_error = None
             self._last_temp = current_temp
-            self.state.pid_output = float(self.min_position)
+            self.state.pid_output = None
             self.state.status = "disabled"
-            await self._set_cover_position(float(self.min_position), force=True)
             await self._async_update_exhaust(
                 current_temp=current_temp,
                 cooling_delta=cooling_delta,
-                window_position=float(self.min_position),
+                window_position=cover_position,
                 co2_active=False,
             )
             self._notify()
@@ -959,9 +958,12 @@ class PidWindowController:
     async def async_set_cooling_mode(self, mode: str) -> None:
         if mode not in {COOLING_MODE_DISABLED, COOLING_MODE_FORCE, COOLING_MODE_AUTO}:
             mode = DEFAULT_COOLING_MODE
+        previous_mode = self.cooling_mode
         self.cooling_mode = mode
         self.profile_mode = mode
         self._async_save_option(CONF_COOLING_MODE, mode)
+        if mode == COOLING_MODE_DISABLED and previous_mode != COOLING_MODE_DISABLED:
+            await self._set_cover_position(float(self.min_position), force=True)
         self._notify()
         await self._async_tick(None)
 

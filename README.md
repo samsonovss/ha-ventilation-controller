@@ -21,7 +21,7 @@ In plain English: this is smart ventilation for Home Assistant. The window opens
 - [What It Can Do](#what-it-can-do)
 - [How It Works](#how-it-works)
 - [Temperature Ventilation](#temperature-ventilation)
-- [CO₂ Ventilation Assist](#co₂-ventilation-assist)
+- [CO₂ Ventilation Assist](#co2-ventilation-assist)
 - [Exhaust Fan Assist](#exhaust-fan-assist)
 - [PID Behavior](#pid-behavior)
 - [Controller Status](#controller-status)
@@ -94,6 +94,8 @@ PID runs only when outside air can cool the room.
 - between those values, the previous allowed/blocked state is kept
 
 If the outdoor sensor is unavailable in `auto` mode, PID is blocked and the window is moved to the minimum position.
+
+<a id="co2-ventilation-assist"></a>
 
 ## CO₂ Ventilation Assist
 

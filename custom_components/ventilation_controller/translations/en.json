@@ -12,6 +12,7 @@
           "ac_climate_entity": "Air conditioner",
           "co2_sensor": "CO₂",
           "exhaust_entity": "Fan exhaust entity",
+          "exhaust_shared": "One shared exhaust fan for all rooms",
           "target_temp": "Target temperature",
           "kp": "Proportional band",
           "ki": "Integral time",
@@ -40,6 +41,7 @@
           "ac_climate_entity": "Air conditioner",
           "co2_sensor": "CO₂",
           "exhaust_entity": "Fan exhaust entity",
+          "exhaust_shared": "One shared exhaust fan for all rooms",
           "target_temp": "Target temperature",
           "kp": "Proportional band",
           "ki": "Integral time",
@@ -108,6 +110,7 @@
         "name": "Fan mode",
         "state": {
           "disabled": "Disabled",
+          "force": "On",
           "auto": "Auto"
         }
       }
@@ -181,6 +184,7 @@
         "name": "Fan status",
         "state": {
           "disabled": "Disabled",
+          "forced_on": "Forced on",
           "unavailable": "Unavailable",
           "idle": "Idle",
           "auto_waiting": "Waiting for effect",

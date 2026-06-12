@@ -36,6 +36,7 @@ from .const import (
     CONF_EXHAUST_MIN_WINDOW_POSITION,
     CONF_EXHAUST_MODE,
     CONF_EXHAUST_NO_COOLING_TIMEOUT,
+    CONF_EXHAUST_SHARED,
     CONF_KD,
     CONF_KI,
     CONF_KP,
@@ -69,6 +70,7 @@ from .const import (
     DEFAULT_EXHAUST_MIN_WINDOW_POSITION,
     DEFAULT_EXHAUST_MODE,
     DEFAULT_EXHAUST_NO_COOLING_TIMEOUT,
+    DEFAULT_EXHAUST_SHARED,
     DEFAULT_KD,
     DEFAULT_KI,
     DEFAULT_KP,
@@ -117,6 +119,7 @@ class ExhaustCoordinator:
         self.entity_id = entity_id
         self.controllers: set[PidWindowController] = set()
         self.requests: dict[str, bool] = {}
+        self.shared_mode: str | None = None
         self.expected_state: bool | None = None
         self.manual_override_until: float | None = None
         self.manual_state: bool | None = None
@@ -125,10 +128,17 @@ class ExhaustCoordinator:
 
     def register(self, controller: "PidWindowController") -> None:
         self.controllers.add(controller)
+        if controller.exhaust_shared:
+            if self.shared_mode is None:
+                self.shared_mode = controller.exhaust_mode
+            else:
+                controller.exhaust_mode = self.shared_mode
 
     def unregister(self, controller: "PidWindowController") -> None:
         self.controllers.discard(controller)
         self.requests.pop(controller.entry.entry_id, None)
+        if not any(item.exhaust_shared for item in self.controllers):
+            self.shared_mode = None
 
     def is_on(self) -> bool | None:
         state = self.hass.states.get(self.entity_id)
@@ -176,6 +186,26 @@ class ExhaustCoordinator:
 
     def clear_request(self, controller: "PidWindowController") -> None:
         self.requests.pop(controller.entry.entry_id, None)
+
+    def clear_manual_override(self) -> None:
+        self.manual_override_until = None
+        self.manual_state = None
+
+    async def async_set_mode(self, controller: "PidWindowController", mode: str) -> None:
+        if controller.exhaust_shared:
+            self.shared_mode = mode
+            targets = [item for item in self.controllers if item.exhaust_shared]
+        else:
+            targets = [controller]
+
+        self.clear_manual_override()
+        for target in targets:
+            target.exhaust_mode = mode
+            target._async_save_option(CONF_EXHAUST_MODE, mode)
+            target._notify()
+
+        for target in targets:
+            await target._async_tick(None)
 
     async def async_request(self, controller: "PidWindowController", turn_on: bool) -> None:
         self.requests[controller.entry.entry_id] = turn_on
@@ -264,8 +294,14 @@ class PidWindowController:
         self.co2_cold_outdoor_threshold = float(options.get(CONF_CO2_COLD_OUTDOOR_THRESHOLD, data.get(CONF_CO2_COLD_OUTDOOR_THRESHOLD, DEFAULT_CO2_COLD_OUTDOOR_THRESHOLD)))
         self.co2_cold_max_position = float(options.get(CONF_CO2_COLD_MAX_POSITION, data.get(CONF_CO2_COLD_MAX_POSITION, DEFAULT_CO2_COLD_MAX_POSITION)))
         self.exhaust_mode = str(options.get(CONF_EXHAUST_MODE, data.get(CONF_EXHAUST_MODE, DEFAULT_EXHAUST_MODE)))
-        if self.exhaust_mode not in {COOLING_MODE_DISABLED, COOLING_MODE_AUTO}:
+        if self.exhaust_mode not in {COOLING_MODE_DISABLED, COOLING_MODE_FORCE, COOLING_MODE_AUTO}:
             self.exhaust_mode = DEFAULT_EXHAUST_MODE
+        self.exhaust_shared = bool(
+            options.get(
+                CONF_EXHAUST_SHARED,
+                data.get(CONF_EXHAUST_SHARED, DEFAULT_EXHAUST_SHARED),
+            )
+        )
         self.exhaust_min_window_position = float(options.get(CONF_EXHAUST_MIN_WINDOW_POSITION, data.get(CONF_EXHAUST_MIN_WINDOW_POSITION, DEFAULT_EXHAUST_MIN_WINDOW_POSITION)))
         self.exhaust_no_cooling_timeout = int(options.get(CONF_EXHAUST_NO_COOLING_TIMEOUT, data.get(CONF_EXHAUST_NO_COOLING_TIMEOUT, DEFAULT_EXHAUST_NO_COOLING_TIMEOUT)))
         self.exhaust_min_temp_drop = float(options.get(CONF_EXHAUST_MIN_TEMP_DROP, data.get(CONF_EXHAUST_MIN_TEMP_DROP, DEFAULT_EXHAUST_MIN_TEMP_DROP)))
@@ -509,13 +545,20 @@ class PidWindowController:
         if self.exhaust_mode == COOLING_MODE_DISABLED:
             self.state.exhaust_status = "disabled"
             self._reset_exhaust_no_cooling()
-            coordinator.clear_request(self)
+            await coordinator.async_request(self, False)
             return
 
         if is_on is None:
             self.state.exhaust_status = "unavailable"
             self._reset_exhaust_no_cooling()
             coordinator.clear_request(self)
+            return
+
+        if self.exhaust_mode == COOLING_MODE_FORCE:
+            self.state.exhaust_status = "forced_on"
+            self._reset_exhaust_no_cooling()
+            coordinator.clear_manual_override()
+            await coordinator.async_request(self, True)
             return
 
         manual_status = coordinator.manual_status()
@@ -1024,12 +1067,13 @@ class PidWindowController:
         await self._async_tick(None)
 
     async def async_set_exhaust_mode(self, mode: str) -> None:
-        if mode not in {COOLING_MODE_DISABLED, COOLING_MODE_AUTO}:
+        if mode not in {COOLING_MODE_DISABLED, COOLING_MODE_FORCE, COOLING_MODE_AUTO}:
             mode = DEFAULT_EXHAUST_MODE
+        if self._exhaust_coordinator is not None:
+            await self._exhaust_coordinator.async_set_mode(self, mode)
+            return
         self.exhaust_mode = mode
         self._async_save_option(CONF_EXHAUST_MODE, mode)
-        if self._exhaust_coordinator is not None:
-            self._exhaust_coordinator.clear_request(self)
         self._notify()
         await self._async_tick(None)
 

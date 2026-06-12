@@ -122,9 +122,10 @@ CO₂ ventilation is blocked when:
 
 Exhaust fan support is optional. If no fan, switch, or group entity is selected, fan entities and logic are not created.
 
-The fan mode has two states:
+The fan mode has three states:
 
-- `disabled` — the integration never touches the fan
+- `disabled` — this room does not request the fan; shared mode turns it off when no room requests it
+- `force` — the fan is kept on regardless of room demand
 - `auto` — the integration can turn the fan on or off when airflow needs help
 
 In `auto`, the fan can turn on for temperature only when:
@@ -139,7 +140,7 @@ For CO₂, the fan can turn on when CO₂ ventilation is active. In that case CO
 
 Manual fan control has priority in `auto`: if you turn the fan entity on or off manually, the integration holds that manual state for `Fan manual override timeout` before auto control resumes.
 
-The same physical fan, switch, or group can be selected in several Ventilation Controller entries. Fan requests are shared by entity ID: the selected entity is turned on when at least one room requests airflow boost, and it is turned off only when no room requests it anymore. If the entity is selected in only one entry, behavior is the same as a single local fan.
+The same physical fan, switch, or group can be selected in several Ventilation Controller entries. Enable `One shared exhaust fan for all rooms` in those entries to share the fan mode as well as fan requests. Changing `Disabled`, `On`, or `Auto` in one room then updates every room using that entity with shared control enabled. In `Auto`, the selected entity is turned on when at least one room requests airflow boost and is turned off only when no room requests it anymore. Disable this option to keep each room's fan mode independent.
 
 ## PID Behavior
 
@@ -198,7 +199,7 @@ Main controls:
 
 - `Temperature ventilation`: `disabled`, `force`, `auto`
 - `CO₂ ventilation`: `disabled`, `auto`, shown only when a CO₂ sensor is selected
-- `Fan mode`: `disabled`, `auto`, shown only when a fan, switch, or group entity is selected
+- `Fan mode`: `disabled`, `force`, `auto`, shown only when a fan, switch, or group entity is selected
 - `AC conflict protection`, shown only when an AC climate entity is selected
 - `Target temperature`
 - `Room`
@@ -250,7 +251,7 @@ Copy `custom_components/ventilation_controller` to `/config/custom_components/ve
 - AC protection never turns the AC on or off; it only reacts to the selected climate entity state.
 - CO₂ is an air-quality priority path: it can open the window to its configured position even when temperature ventilation is disabled or blocked.
 - Fan assist never changes the PID output or window target; it only turns the selected fan/switch/group on or off.
-- The same fan/switch/group may be reused by several rooms; requests are coordinated so one room does not turn the fan off while another room still needs it.
+- The same fan/switch/group may be reused by several rooms; shared mode synchronizes `Disabled`, `On`, and `Auto`, while automatic requests are coordinated between rooms.
 
 ## Authors
 

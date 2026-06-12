@@ -13,8 +13,10 @@ from .const import (
     CONF_CO2_SENSOR,
     CONF_COVER_ENTITY,
     CONF_EXHAUST_ENTITY,
+    CONF_EXHAUST_SHARED,
     CONF_OUTDOOR_SENSOR,
     CONF_TEMP_SENSOR,
+    DEFAULT_EXHAUST_SHARED,
     DEFAULT_NAME,
     DOMAIN,
 )
@@ -76,6 +78,10 @@ def _options_schema(hass: HomeAssistant, data: dict | None = None) -> dict:
                 mode=selector.SelectSelectorMode.DROPDOWN,
             )
         ),
+        vol.Optional(
+            CONF_EXHAUST_SHARED,
+            default=data.get(CONF_EXHAUST_SHARED, DEFAULT_EXHAUST_SHARED),
+        ): selector.BooleanSelector(),
         vol.Required(CONF_COVER_ENTITY, default=data.get(CONF_COVER_ENTITY, "")): selector.EntitySelector(
             selector.EntitySelectorConfig(domain="cover")
         ),

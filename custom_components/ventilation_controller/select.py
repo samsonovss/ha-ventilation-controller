@@ -114,7 +114,7 @@ class PidWindowCo2VentilationSelect(SelectEntity):
 
 
 class PidWindowExhaustModeSelect(SelectEntity):
-    _attr_options = [COOLING_MODE_DISABLED, COOLING_MODE_AUTO]
+    _attr_options = [COOLING_MODE_DISABLED, COOLING_MODE_FORCE, COOLING_MODE_AUTO]
     _attr_has_entity_name = True
 
     def __init__(self, controller, entry_id: str) -> None:

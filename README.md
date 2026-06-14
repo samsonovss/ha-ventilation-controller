@@ -255,7 +255,7 @@ Copy `custom_components/ventilation_controller` to `/config/custom_components/ve
 
 ## Authors
 
-Created by [@samsonovss](https://github.com/samsonovss) with help from Shade, an OpenClaw personal AI agent.
+Created by [@samsonovss](https://github.com/samsonovss)
 
 ## Support
 

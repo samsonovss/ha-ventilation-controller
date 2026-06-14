@@ -255,7 +255,7 @@ PID-логика похожа на `node-red-contrib-pid`:
 
 ## Авторы
 
-Создано [@samsonovss](https://github.com/samsonovss) с помощью Тени, персонального AI-агента OpenClaw.
+Создано [@samsonovss](https://github.com/samsonovss)
 
 ## Поддержать
 
